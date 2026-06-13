@@ -1,0 +1,368 @@
+<script>
+  (function () {
+    const persona = {
+      name: "Bloom & Bean Bot",
+      fallback: "I don't have that detail in the Bloom & Bean knowledge base yet. Please contact us at (555) 123-4567 or hello@example.com and the team will be happy to help.",
+      contact: "You can call Bloom & Bean at (555) 123-4567 or email hello@example.com."
+    };
+
+    const answers = [
+      {
+        keywords: ["hour", "open", "close", "closed", "time", "today", "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+        answer: "Happy to help. Bloom & Bean is open Monday-Wednesday 9:00 AM-6:00 PM, Thursday-Friday 9:00 AM-7:00 PM, Saturday 10:00 AM-4:00 PM, and closed Sunday."
+      },
+      {
+        keywords: ["where", "address", "location", "directions", "map", "find", "visit", "maple", "cinema", "station"],
+        answer: "You can find us at 42 Maple Lane, Greenfield, ST 12345, beside the old cinema. Look for the green awning and the flower cart out front."
+      },
+      {
+        keywords: ["coffee", "espresso", "cold brew", "tea", "seasonal drink", "drink", "latte", "cafe"],
+        answer: "Absolutely. Bloom & Bean serves espresso, cold brew, teas, and seasonal drinks, made quickly without making your morning feel rushed."
+      },
+      {
+        keywords: ["flower", "flowers", "bouquet", "stems", "stem", "fresh", "wrap", "birthday", "thank"],
+        answer: "Yes, petals are part of the fun. You can choose stems by the bloom or ask us to wrap a ready-to-gift bouquet. Fresh flowers arrive Tuesday through Saturday."
+      },
+      {
+        keywords: ["gift", "gifts", "card", "cards", "candle", "candles", "treat", "treats", "local"],
+        answer: "Bloom & Bean carries candles, cards, and local treats, so you can pair a coffee or bouquet with a thoughtful little gift."
+      },
+      {
+        keywords: ["workshop", "class", "classes", "event night", "evening"],
+        answer: "Yes. Bloom & Bean hosts relaxed evening classes and workshop nights for friends and neighbors."
+      },
+      {
+        keywords: ["dairy", "dairy-free", "non dairy", "milk", "oat", "vegan"],
+        answer: "Yes. Every drink can be made dairy-free on request."
+      },
+      {
+        keywords: ["order ahead", "preorder", "call ahead", "pickup", "pick up", "before work", "ready"],
+        answer: "The easiest next step is to call ahead. We can help with bouquets, office coffee boxes, and small event bundles with pickup windows."
+      },
+      {
+        keywords: ["office", "team", "bundle", "small event", "event", "large order", "coffee box", "coffee boxes"],
+        answer: "Bloom & Bean can help with office coffee boxes and small event bundles. Please call ahead or email hello@example.com so the team can confirm timing and details."
+      },
+      {
+        keywords: ["bike", "bicycle", "rack", "racks"],
+        answer: "Bike racks are beside the side entrance. A tiny practical detail, but a very useful one."
+      },
+      {
+        keywords: ["delivery", "deliver", "parking", "holiday", "allergen", "allergy", "ingredient", "refund", "capacity"],
+        answer: "I don't have that detail in the Bloom & Bean knowledge base yet, so I don't want to guess. Please contact us at (555) 123-4567 or hello@example.com."
+      },
+      {
+        keywords: ["contact", "phone", "call", "email", "reach"],
+        answer: "You can call Bloom & Bean at (555) 123-4567 or email hello@example.com. We would be happy to help."
+      },
+      {
+        keywords: ["menu", "service", "services", "offer", "offering", "sell", "what do you have"],
+        answer: "Bloom & Bean offers small-batch coffee, a fresh flower bar, candles, cards, local treats, and relaxed workshops. Coffee plus flowers: a pretty useful combo."
+      }
+    ];
+
+    const suggestions = [
+      "What are your hours?",
+      "Where are you located?",
+      "Do you sell flowers?",
+      "Can I order ahead?"
+    ];
+
+    function normalize(text) {
+      return text.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function getReply(input) {
+      const text = normalize(input);
+      if (!text) return "Ask me about Bloom & Bean hours, location, coffee, flowers, gifts, workshops, or order-ahead options.";
+
+      const match = answers.find((item) => item.keywords.some((keyword) => text.includes(keyword)));
+      return match ? match.answer : persona.fallback;
+    }
+
+    function addStyles() {
+      const style = document.createElement("style");
+      style.textContent = `
+        .bb-chatbot {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          z-index: 9999;
+          font-family: Arial, Helvetica, sans-serif;
+          color: #192226;
+        }
+
+        .bb-chatbot * {
+          box-sizing: border-box;
+        }
+
+        .bb-chat-toggle {
+          width: 62px;
+          height: 62px;
+          border: 0;
+          border-radius: 50%;
+          color: #fff;
+          background: #0e7c66;
+          box-shadow: 0 16px 36px rgba(25, 34, 38, 0.24);
+          cursor: pointer;
+          font-size: 26px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        .bb-chat-toggle:hover,
+        .bb-chat-toggle:focus-visible {
+          background: #075c4d;
+          outline: 3px solid rgba(242, 184, 75, 0.55);
+          outline-offset: 3px;
+        }
+
+        .bb-chat-panel {
+          position: absolute;
+          right: 0;
+          bottom: 76px;
+          width: min(380px, calc(100vw - 28px));
+          overflow: hidden;
+          border: 1px solid #dfe5df;
+          border-radius: 8px;
+          background: #fff;
+          box-shadow: 0 24px 64px rgba(25, 34, 38, 0.22);
+          transform-origin: bottom right;
+        }
+
+        .bb-chat-panel[hidden] {
+          display: none;
+        }
+
+        .bb-chat-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 14px 16px;
+          color: #fff;
+          background: #075c4d;
+        }
+
+        .bb-chat-title {
+          margin: 0;
+          font-size: 1rem;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+
+        .bb-chat-subtitle {
+          display: block;
+          margin-top: 2px;
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 0.78rem;
+          font-weight: 400;
+        }
+
+        .bb-chat-close {
+          width: 34px;
+          height: 34px;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          border-radius: 50%;
+          color: #fff;
+          background: transparent;
+          cursor: pointer;
+          font-size: 20px;
+        }
+
+        .bb-chat-messages {
+          height: 330px;
+          overflow-y: auto;
+          padding: 16px;
+          background: #fbfaf7;
+        }
+
+        .bb-chat-message {
+          max-width: 88%;
+          margin: 0 0 10px;
+          padding: 10px 12px;
+          border-radius: 8px;
+          font-size: 0.94rem;
+          line-height: 1.35;
+        }
+
+        .bb-chat-message.bot {
+          background: #eef7f4;
+          border: 1px solid #d7ebe5;
+        }
+
+        .bb-chat-message.user {
+          margin-left: auto;
+          color: #fff;
+          background: #0e7c66;
+        }
+
+        .bb-chat-suggestions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          padding: 0 16px 12px;
+          background: #fbfaf7;
+        }
+
+        .bb-chat-chip {
+          border: 1px solid #dfe5df;
+          border-radius: 999px;
+          padding: 7px 10px;
+          color: #075c4d;
+          background: #fff;
+          cursor: pointer;
+          font-size: 0.82rem;
+        }
+
+        .bb-chat-form {
+          display: flex;
+          gap: 8px;
+          padding: 12px;
+          border-top: 1px solid #dfe5df;
+          background: #fff;
+        }
+
+        .bb-chat-input {
+          min-width: 0;
+          flex: 1;
+          min-height: 42px;
+          border: 1px solid #dfe5df;
+          border-radius: 8px;
+          padding: 0 11px;
+          font: inherit;
+        }
+
+        .bb-chat-send {
+          min-height: 42px;
+          border: 0;
+          border-radius: 8px;
+          padding: 0 14px;
+          color: #fff;
+          background: #d8643c;
+          cursor: pointer;
+          font-weight: 800;
+        }
+
+        @media (max-width: 520px) {
+          .bb-chatbot {
+            right: 12px;
+            bottom: 12px;
+          }
+
+          .bb-chat-panel {
+            bottom: 72px;
+          }
+
+          .bb-chat-messages {
+            height: min(330px, 52vh);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    function createMessage(text, who) {
+      const message = document.createElement("div");
+      message.className = "bb-chat-message " + who;
+      message.textContent = text;
+      return message;
+    }
+
+    function initChatbot() {
+      if (document.querySelector(".bb-chatbot")) return;
+
+      addStyles();
+
+      const root = document.createElement("div");
+      root.className = "bb-chatbot";
+      root.innerHTML = `
+        <section class="bb-chat-panel" aria-label="Bloom & Bean support chat" hidden>
+          <div class="bb-chat-head">
+            <div>
+              <p class="bb-chat-title">Bloom & Bean Bot <span class="bb-chat-subtitle">Coffee, flowers, and quick answers</span></p>
+            </div>
+            <button class="bb-chat-close" type="button" aria-label="Close chat">x</button>
+          </div>
+          <div class="bb-chat-messages" aria-live="polite"></div>
+          <div class="bb-chat-suggestions" aria-label="Suggested questions"></div>
+          <form class="bb-chat-form">
+            <input class="bb-chat-input" type="text" aria-label="Ask Bloom & Bean a question" placeholder="Ask about hours, flowers, coffee...">
+            <button class="bb-chat-send" type="submit">Send</button>
+          </form>
+        </section>
+        <button class="bb-chat-toggle" type="button" aria-label="Open Bloom & Bean chat">BB</button>
+      `;
+
+      document.body.appendChild(root);
+
+      const panel = root.querySelector(".bb-chat-panel");
+      const toggle = root.querySelector(".bb-chat-toggle");
+      const close = root.querySelector(".bb-chat-close");
+      const messages = root.querySelector(".bb-chat-messages");
+      const form = root.querySelector(".bb-chat-form");
+      const input = root.querySelector(".bb-chat-input");
+      const chips = root.querySelector(".bb-chat-suggestions");
+
+      function scrollMessages() {
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function say(text, who) {
+        messages.appendChild(createMessage(text, who));
+        scrollMessages();
+      }
+
+      function ask(text) {
+        const question = text.trim();
+        if (!question) return;
+        say(question, "user");
+        window.setTimeout(function () {
+          say(getReply(question), "bot");
+        }, 180);
+      }
+
+      suggestions.forEach(function (label) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "bb-chat-chip";
+        chip.textContent = label;
+        chip.addEventListener("click", function () {
+          ask(label);
+          input.focus();
+        });
+        chips.appendChild(chip);
+      });
+
+      toggle.addEventListener("click", function () {
+        const isHidden = panel.hasAttribute("hidden");
+        panel.toggleAttribute("hidden", !isHidden);
+        toggle.setAttribute("aria-label", isHidden ? "Close Bloom & Bean chat" : "Open Bloom & Bean chat");
+        if (isHidden) {
+          if (!messages.children.length) {
+            say("Hi there. I'm Bloom & Bean Bot. Ask me about hours, flowers, coffee, gifts, workshops, or visiting the shop.", "bot");
+          }
+          input.focus();
+        }
+      });
+
+      close.addEventListener("click", function () {
+        panel.setAttribute("hidden", "");
+        toggle.setAttribute("aria-label", "Open Bloom & Bean chat");
+        toggle.focus();
+      });
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        ask(input.value);
+        input.value = "";
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initChatbot);
+    } else {
+      initChatbot();
+    }
+  })();
+</script>
